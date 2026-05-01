@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Census Model</title>
+  <style>
+    body { font-family: Arial; padding: 20px; }
+    .slider-group { margin-bottom: 20px; }
+    .value { font-weight: bold; margin-left: 10px; }
+  </style>
+</head>
+<body>
+
+  <h2>Census Model Input</h2>
+
+  <div class="slider-group">
+    <label>Age:
+      <span id="ageVal" class="value"></span>
+    </label><br>
+    <input type="range" id="age" min="17" max="99" value="30">
+  </div>
+
+  <div class="slider-group">
+    <label>Education:
+      <span id="eduVal" class="value"></span>
+    </label><br>
+    <select id="education">
+        <option value=1>Preschool</option>
+        <option value=2>1st-4th</option>
+        <option value=3>5th-6th</option>
+        <option value=4>7th-8th</option>
+        <option value=5>9th</option>
+        <option value=6>10th</option>
+        <option value=7>11th</option>
+        <option value=8>12th</option>
+        <option value=9>HS-grad</option>
+        <option value=10>Some-college</option>
+        <option value=11>Assoc-voc</option>
+        <option value=12>Assoc-acdm</option>
+        <option value=13 selected>Bachelors</option>
+        <option value=14>Masters</option>
+        <option value=15>Prof-school</option>
+        <option value=16>Doctorate</option>
+    </select>
+  </div>
+
+  <div class="slider-group">
+    <label>Hours:
+      <span id="hoursVal" class="value"></span>
+    </label><br>
+    <input type="range" id="hours" min="1" max="99" value="40">
+  </div>
+
+  <div class="slider-group">
+    <label>Capital Gains:
+      <span id="capgainsVal" class="value"></span>
+    </label><br>
+    <input type="range" id="capgains" min="0" max="99999" value="0">
+  </div>
+
+  <div class="slider-group">
+    <label>Working Class:
+      <span id="workVal" class="value"></span>
+    </label><br>
+    <select id="workclass">
+        <option value="Unknown">Unknown or Other</option>
+        <option value="Federal-gov">Federal Government</option>
+        <option value="State-gov">State Government</option>
+        <option value="Local-gov">Local Government</option>
+        <option value="Private">Private</option>
+        <option value="Self-emp-inc">Self Employed Inc</option>
+        <option value="Self-emp-not-inc">Self Employed Not Inc</option>
+        <option value="Never-worked">Never Worked</option>
+        <option value="Without-pay">Without Pay</option>
+    </select>
+  </div>
+
+  <button id="submitBtn">Submit</button>
+
+  <h3>Prediction:</h3>
+  <div id="resultBox">Not Known Yet</div>
+
+<script>
+  // Update displayed values live
+  const age = document.getElementById("age");
+  const education = document.getElementById("education");
+  const hours = document.getElementById("hours");
+  const capgains = document.getElementById("capgains");
+  const workclass = document.getElementById("workclass");
+  
+  edutranslate = ["Preschool","1st-4th","5th-6th","7th-8th","9th","10th","11th","12th","HS-grad","Some-college","Assoc-voc","Assoc-acdm","Bachelors","Masters","Prof-school","Doctorate"]
+
+  function resync() {
+    age.oninput = () => ageVal.textContent = age.value;
+    education.oninput = () => eduVal.textContent = edutranslate[education.value - 1];
+    hours.oninput = () => hoursVal.textContent = hours.value;
+    capgains.oninput = () => capgainsVal.textContent = capgains.value;
+    workclass.oninput = () => workVal.textContent = workclass.value;
+    ageVal.textContent = age.value;
+    eduVal.textContent = edutranslate[education.value - 1];
+    hoursVal.textContent = hours.value;
+    capgainsVal.textContent = capgains.value;
+    workVal.textContent = workclass.value;
+  }
+  
+  document.getElementById("submitBtn").onclick = async () => {
+    const AGE = age.value;
+    const EDUCATION = education.value;
+    const HOURS = hours.value;
+    const CAPGAINS = capgains.value;
+    const WORKCLASS = workclass.value;
+
+    const url = `http://localhost:8000/census.json?AGE=${AGE}&EDUCATION=${EDUCATION}&HOURS=${HOURS}&CAPGAIN=${CAPGAINS}&CAPLOSS=0&WORKCLASS=${WORKCLASS}`;
+
+    document.getElementById("resultBox").textContent = "fetching.....";
+
+    try {
+      const response = await fetch(url);
+      const data = await response.json();
+
+      document.getElementById("resultBox").textContent = data.result;
+    } catch (err) {
+      document.getElementById("resultBox").textContent = "Error fetching result";
+      console.error(err);
+    }
+  };
+
+  // make sure on reload things match up  
+  window.addEventListener("DOMContentLoaded", () => {
+    const age = document.getElementById("age");
+    const education = document.getElementById("education");
+    const hours = document.getElementById("hours");
+    const capgains = document.getElementById("capgains");
+    const workclass = document.getElementById("workclass");
+    
+    // Sync displayed values with actual slider positions
+    resync();
+  });
+  
+</script>
+
+</body>
+</html>
